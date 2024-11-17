@@ -129,7 +129,6 @@ def balance_dataset(X, y, tfidf, target_counts=None):
         X_resampled, 
         columns=tfidf.get_feature_names_out()
     )
-    balanced_df["Category"] = y_resampled
     
     return balanced_df, y_resampled
 
