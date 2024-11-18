@@ -140,3 +140,39 @@ def get_preprocessed_dataset(data_path="./data", categories=None):
     return balanced_df, y_resampled
 
 
+def preprocess_new_text(text, tfidf):
+    """
+    Preprocess and vectorize a single new text input.
+    
+    Args:
+        text (str): Input text to preprocess.
+        tfidf (TfidfVectorizer): Fitted TF-IDF vectorizer used for training.
+    
+    Returns:
+        sparse_matrix: Transformed TF-IDF vector for the input text.
+    """
+    stop = set(stopwords.words("english") + list(punctuation))
+    custom_stopwords = {"email", "subject", "re", "fw", "https", "www"}
+    stop.update(custom_stopwords)
+    
+    wordnet_lemmatizer = WordNetLemmatizer()
+
+    try:
+        # Tokenization, filtering, and lemmatization
+        tokens = WordPunctTokenizer().tokenize(text.lower())
+        filtered = [
+            regex.sub(r'\p{^Latin}', '', w)
+            for w in tokens if w.isalpha() and len(w) > 3
+        ]
+        filtered = [
+            wordnet_lemmatizer.lemmatize(w, pos="v") 
+            for w in filtered if w not in stop
+        ]
+        cleaned_text = " ".join(filtered)
+        
+        # Vectorization
+        return tfidf.transform([cleaned_text])
+    
+    except Exception as e:
+        print(f"Error processing text: {text[:50]}... {e}")
+        return None
